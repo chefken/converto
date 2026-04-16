@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Converto — File Converter</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --red: #e8192c;
+    --red-dark: #b5111f;
+    --red-light: #ff4455;
+    --red-pale: #fff0f1;
+    --black: #111111;
+    --black2: #1e1e1e;
+    --gray: #444;
+    --gray2: #888;
+    --gray3: #ccc;
+    --border: #e2e2e2;
+    --bg: #f7f7f5;
+    --white: #ffffff;
+    --font-head: 'Bebas Neue', sans-serif;
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+    --radius: 14px;
+    --radius-sm: 8px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --shadow-hover: 0 6px 24px rgba(232,25,44,0.18);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--black);
+    font-family: var(--font-body);
+    font-size: 15px;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--white);
+    border-bottom: 1.5px solid var(--border);
+    padding: 0 40px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo {
+    font-family: var(--font-head);
+    font-size: 30px; letter-spacing: 2px;
+    color: var(--black);
+    display: flex; align-items: baseline; gap: 2px;
+  }
+  .logo .dot { color: var(--red); font-size: 36px; line-height: 0; vertical-align: -4px; }
+  .header-badge {
+    background: var(--red-pale); color: var(--red);
+    border: 1px solid rgba(232,25,44,0.2);
+    border-radius: 20px; padding: 5px 14px;
+    font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--white);
+    border-bottom: 1.5px solid var(--border);
+    padding: 56px 40px 48px;
+    display: flex; align-items: flex-end; justify-content: space-between; gap: 32px;
+    flex-wrap: wrap;
+  }
+  .hero-left h1 {
+    font-family: var(--font-head);
+    font-size: clamp(52px, 8vw, 88px);
+    line-height: 0.95; letter-spacing: 2px;
+    color: var(--black);
+    margin-bottom: 16px;
+  }
+  .hero-left h1 .red { color: var(--red); }
+  .hero-left p { color: var(--gray2); font-size: 15px; max-width: 420px; line-height: 1.75; }
+  .hero-stats {
+    display: flex; gap: 32px; flex-wrap: wrap;
+  }
+  .stat { text-align: right; }
+  .stat-num { font-family: var(--font-head); font-size: 38px; letter-spacing: 1px; color: var(--red); line-height: 1; }
+  .stat-label { font-size: 11px; color: var(--gray2); letter-spacing: 1px; text-transform: uppercase; margin-top: 3px; }
+
+  /* ── MAIN LAYOUT ── */
+  .main { max-width: 960px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* ── TOGGLE TAB ROW (fidget feel) ── */
+  .tool-switcher {
+    display: flex; gap: 8px; flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+  .tool-btn {
+    position: relative;
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 50px;
+    padding: 10px 20px;
+    font-family: var(--font-body); font-size: 13px; font-weight: 600;
+    color: var(--gray);
+    cursor: pointer;
+    transition: all 0.18s cubic-bezier(0.34,1.56,0.64,1);
+    display: flex; align-items: center; gap: 7px;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    transform: scale(1);
+  }
+  .tool-btn:hover {
+    border-color: var(--red);
+    color: var(--red);
+    transform: scale(1.04);
+    box-shadow: 0 3px 14px rgba(232,25,44,0.12);
+  }
+  .tool-btn:active { transform: scale(0.96); }
+  .tool-btn.active {
+    background: var(--red);
+    border-color: var(--red);
+    color: var(--white);
+    box-shadow: 0 4px 18px rgba(232,25,44,0.3);
+    transform: scale(1.05);
+  }
+  .tool-btn .btn-ico {
+    width: 20px; height: 20px;
+    border-radius: 5px;
+    background: rgba(0,0,0,0.06);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; flex-shrink: 0;
+    transition: background 0.18s;
+  }
+  .tool-btn.active .btn-ico { background: rgba(255,255,255,0.2); }
+  /* press-in bounce for fidget effect */
+  .tool-btn:active {
+    transform: scale(0.94);
+    transition: transform 0.08s;
+  }
+
+  /* ── PANEL ── */
+  .panel { display: none; }
+  .panel.active {
+    display: block;
+    animation: slideIn 0.25s cubic-bezier(0.34,1.3,0.64,1);
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(10px) scale(0.99); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 36px;
+    box-shadow: var(--shadow);
+  }
+  .card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+  .card-title {
+    font-family: var(--font-head);
+    font-size: 28px; letter-spacing: 1px;
+    color: var(--black); line-height: 1;
+  }
+  .card-arrow {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--red); color: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .card-sub { color: var(--gray2); font-size: 13px; margin-bottom: 28px; }
+
+  /* ── DROPZONE ── */
+  .dropzone {
+    border: 2px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 44px 24px;
+    text-align: center; cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    background: var(--bg);
+  }
+  .dropzone:hover, .dropzone.dragging {
+    border-color: var(--red);
+    background: var(--red-pale);
+  }
+  .dropzone input[type="file"] {
+    position: absolute; inset: 0; opacity: 0;
+    cursor: pointer; width: 100%; height: 100%;
+  }
+  .dz-circle {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--white); border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin: 0 auto 14px;
+    box-shadow: var(--shadow);
+  }
+  .dz-main { font-size: 15px; font-weight: 600; color: var(--black); margin-bottom: 5px; }
+  .dz-sub { font-size: 12px; color: var(--gray2); }
+  .dz-sub span { color: var(--red); font-weight: 600; }
+
+  /* ── FILE LIST ── */
+  .file-list { margin-top: 16px; display: flex; flex-direction: column; gap: 7px; }
+  .file-item {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: 10px; padding: 9px 14px;
+    font-size: 13px; animation: slideIn 0.18s ease;
+    transition: border-color 0.15s;
+  }
+  .file-item:hover { border-color: var(--gray3); }
+  .fi-ext {
+    width: 34px; height: 34px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.3px; flex-shrink: 0;
+  }
+  .ext-pdf  { background: #ffe8ea; color: var(--red-dark); }
+  .ext-docx, .ext-doc  { background: #e8eeff; color: #2040c8; }
+  .ext-pptx, .ext-ppt  { background: #fff3e8; color: #c85520; }
+  .ext-other{ background: #f0f0f0; color: var(--gray); }
+  .fi-name { flex: 1; color: var(--black); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+  .fi-size { color: var(--gray2); font-size: 11px; white-space: nowrap; }
+  .fi-remove {
+    background: none; border: none; color: var(--gray3); cursor: pointer;
+    font-size: 15px; padding: 2px 4px; transition: color 0.15s; line-height: 1;
+    border-radius: 4px;
+  }
+  .fi-remove:hover { color: var(--red); background: var(--red-pale); }
+
+  /* ── CONVERT BUTTON ── */
+  .convert-btn {
+    margin-top: 24px; width: 100%;
+    background: var(--black); border: none; border-radius: 12px;
+    color: var(--white); font-family: var(--font-head);
+    font-size: 18px; letter-spacing: 2px;
+    padding: 16px 24px; cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    position: relative; overflow: hidden;
+  }
+  .convert-btn::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: var(--red);
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.34,1,0.64,1);
+    z-index: 0;
+  }
+  .convert-btn:hover::after { transform: translateX(0); }
+  .convert-btn:hover { box-shadow: var(--shadow-hover); transform: translateY(-2px); }
+  .convert-btn:active { transform: translateY(0) scale(0.98); }
+  .convert-btn span { position: relative; z-index: 1; }
+  .convert-btn:disabled {
+    opacity: 0.45; cursor: not-allowed;
+    transform: none !important; box-shadow: none !important;
+  }
+  .convert-btn:disabled::after { display: none; }
+
+  /* ── STATUS ── */
+  .status {
+    margin-top: 14px; padding: 12px 16px;
+    border-radius: 10px; font-size: 13px; font-weight: 500;
+    display: none; align-items: center; gap: 10px;
+  }
+  .status.show { display: flex; }
+  .status.loading { background: #f5f5f5; border: 1.5px solid var(--border); color: var(--gray); }
+  .status.success { background: #edfff5; border: 1.5px solid #b2f0d0; color: #1a7a45; }
+  .status.error   { background: var(--red-pale); border: 1.5px solid rgba(232,25,44,0.2); color: var(--red-dark); }
+  .spin {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border); border-top-color: var(--red);
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite; flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── AUDIO PANEL ── */
+  .audio-platforms {
+    display: flex; gap: 10px; margin-bottom: 22px;
+  }
+  .plat {
+    flex: 1; border: 1.5px solid var(--border); border-radius: 12px;
+    padding: 14px 16px; display: flex; align-items: center; gap: 10px;
+    background: var(--bg);
+  }
+  .plat-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .plat-yt { background: #ff0000; }
+  .plat-ig { background: linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); }
+  .plat-name { font-size: 13px; font-weight: 600; color: var(--black); }
+  .plat-sub { font-size: 11px; color: var(--gray2); }
+
+  .url-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .url-input {
+    flex: 1; min-width: 220px;
+    border: 1.5px solid var(--border); border-radius: 12px;
+    background: var(--bg); color: var(--black);
+    font-family: var(--font-body); font-size: 14px;
+    padding: 13px 16px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .url-input:focus { border-color: var(--red); background: var(--white); }
+  .url-input::placeholder { color: var(--gray3); }
+  .dl-btn {
+    background: var(--red); border: none; border-radius: 12px;
+    color: var(--white); font-family: var(--font-head);
+    font-size: 16px; letter-spacing: 1.5px;
+    padding: 13px 26px; cursor: pointer; white-space: nowrap;
+    transition: all 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .dl-btn:hover { background: var(--red-dark); transform: scale(1.04); box-shadow: var(--shadow-hover); }
+  .dl-btn:active { transform: scale(0.97); }
+  .dl-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  /* ── MERGE NOTE ── */
+  .merge-note {
+    display: flex; align-items: center; gap: 8px;
+    background: #fffbe8; border: 1.5px solid #f0e0a0;
+    border-radius: 10px; padding: 10px 14px; margin-bottom: 16px;
+    font-size: 12px; font-weight: 500; color: #7a5c00;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center; padding: 32px 0;
+    border-top: 1.5px solid var(--border);
+    margin-top: 64px; color: var(--gray2); font-size: 12px;
+  }
+  footer strong { color: var(--red); font-weight: 600; }
+
+  /* ── SCROLL ── */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  @media (max-width: 600px) {
+    header { padding: 0 18px; }
+    .hero { padding: 36px 18px 32px; }
+    .hero-stats { gap: 20px; }
+    .stat { text-align: left; }
+    .main { padding: 28px 14px 60px; }
+    .card { padding: 22px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">CONVERT<span class="dot">.</span>O</div>
+  <div class="header-badge">Local &amp; Private</div>
+</header>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-left">
+    <h1>YOUR FILES.<br><span class="red">YOUR RULES.</span></h1>
+    <p>Batch convert PDFs, Word docs, and presentations. Download audio from YouTube and Instagram. No limits. Runs on your machine.</p>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num">6</div><div class="stat-label">Tools</div></div>
+    <div class="stat"><div class="stat-num">∞</div><div class="stat-label">Files at once</div></div>
+    <div class="stat"><div class="stat-num">0</div><div class="stat-label">Uploads to cloud</div></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- TOGGLE BUTTONS (fidget style) -->
+  <div class="tool-switcher">
+    <button class="tool-btn active" onclick="switchTab('pdf-docx',this)">
+      <div class="btn-ico">📄</div> PDF → DOCX
+    </button>
+    <button class="tool-btn" onclick="switchTab('docx-pdf',this)">
+      <div class="btn-ico">📝</div> DOCX → PDF
+    </button>
+    <button class="tool-btn" onclick="switchTab('ppt-pdf',this)">
+      <div class="btn-ico">📊</div> PPT → PDF
+    </button>
+    <button class="tool-btn" onclick="switchTab('pdf-ppt',this)">
+      <div class="btn-ico">🖼️</div> PDF → PPT
+    </button>
+    <button class="tool-btn" onclick="switchTab('merge',this)">
+      <div class="btn-ico">🔗</div> Merge PDFs
+    </button>
+    <button class="tool-btn" onclick="switchTab('audio',this)">
+      <div class="btn-ico">🎵</div> Audio DL
+    </button>
+  </div>
+
+  <!-- PANEL: PDF → DOCX -->
+  <div class="panel active" id="panel-pdf-docx">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">PDF TO DOCX</div>
+          <div class="card-sub">Convert PDFs to editable Word documents — upload as many as you want.</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+      <div class="dropzone" id="dz-pdf-docx"
+           ondragover="onDragOver(event,'dz-pdf-docx')"
+           ondragleave="onDragLeave('dz-pdf-docx')"
+           ondrop="onDrop(event,'pdf-docx')">
+        <input type="file" multiple accept=".pdf" onchange="onFileSelect(event,'pdf-docx')"/>
+        <div class="dz-circle">📂</div>
+        <div class="dz-main">Drop PDF files here or click to browse</div>
+        <div class="dz-sub">Multiple files OK &nbsp;·&nbsp; <span>Output: .docx</span></div>
+      </div>
+      <div class="file-list" id="list-pdf-docx"></div>
+      <button class="convert-btn" id="btn-pdf-docx" onclick="convertFiles('pdf-docx','/convert/pdf-to-docx')">
+        <span>⚡ CONVERT TO DOCX</span>
+      </button>
+      <div class="status" id="status-pdf-docx"></div>
+    </div>
+  </div>
+
+  <!-- PANEL: DOCX → PDF -->
+  <div class="panel" id="panel-docx-pdf">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">DOCX TO PDF</div>
+          <div class="card-sub">Batch convert Word documents to PDF in one click.</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+      <div class="dropzone" id="dz-docx-pdf"
+           ondragover="onDragOver(event,'dz-docx-pdf')"
+           ondragleave="onDragLeave('dz-docx-pdf')"
+           ondrop="onDrop(event,'docx-pdf')">
+        <input type="file" multiple accept=".docx,.doc" onchange="onFileSelect(event,'docx-pdf')"/>
+        <div class="dz-circle">📂</div>
+        <div class="dz-main">Drop DOCX files here or click to browse</div>
+        <div class="dz-sub">Multiple files OK &nbsp;·&nbsp; <span>Output: .pdf</span></div>
+      </div>
+      <div class="file-list" id="list-docx-pdf"></div>
+      <button class="convert-btn" id="btn-docx-pdf" onclick="convertFiles('docx-pdf','/convert/docx-to-pdf')">
+        <span>⚡ CONVERT TO PDF</span>
+      </button>
+      <div class="status" id="status-docx-pdf"></div>
+    </div>
+  </div>
+
+  <!-- PANEL: PPT → PDF -->
+  <div class="panel" id="panel-ppt-pdf">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">PPT TO PDF</div>
+          <div class="card-sub">Turn PowerPoint files into PDFs — batch supported.</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+      <div class="dropzone" id="dz-ppt-pdf"
+           ondragover="onDragOver(event,'dz-ppt-pdf')"
+           ondragleave="onDragLeave('dz-ppt-pdf')"
+           ondrop="onDrop(event,'ppt-pdf')">
+        <input type="file" multiple accept=".ppt,.pptx" onchange="onFileSelect(event,'ppt-pdf')"/>
+        <div class="dz-circle">📂</div>
+        <div class="dz-main">Drop PPT / PPTX files here or click to browse</div>
+        <div class="dz-sub">Multiple files OK &nbsp;·&nbsp; <span>Output: .pdf</span></div>
+      </div>
+      <div class="file-list" id="list-ppt-pdf"></div>
+      <button class="convert-btn" id="btn-ppt-pdf" onclick="convertFiles('ppt-pdf','/convert/ppt-to-pdf')">
+        <span>⚡ CONVERT TO PDF</span>
+      </button>
+      <div class="status" id="status-ppt-pdf"></div>
+    </div>
+  </div>
+
+  <!-- PANEL: PDF → PPT -->
+  <div class="panel" id="panel-pdf-ppt">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">PDF TO PPT</div>
+          <div class="card-sub">Each PDF page becomes a slide in a PowerPoint file.</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+      <div class="dropzone" id="dz-pdf-ppt"
+           ondragover="onDragOver(event,'dz-pdf-ppt')"
+           ondragleave="onDragLeave('dz-pdf-ppt')"
+           ondrop="onDrop(event,'pdf-ppt')">
+        <input type="file" multiple accept=".pdf" onchange="onFileSelect(event,'pdf-ppt')"/>
+        <div class="dz-circle">📂</div>
+        <div class="dz-main">Drop PDF files here or click to browse</div>
+        <div class="dz-sub">Multiple files OK &nbsp;·&nbsp; <span>Output: .pptx</span></div>
+      </div>
+      <div class="file-list" id="list-pdf-ppt"></div>
+      <button class="convert-btn" id="btn-pdf-ppt" onclick="convertFiles('pdf-ppt','/convert/pdf-to-ppt')">
+        <span>⚡ CONVERT TO PPTX</span>
+      </button>
+      <div class="status" id="status-pdf-ppt"></div>
+    </div>
+  </div>
+
+  <!-- PANEL: MERGE -->
+  <div class="panel" id="panel-merge">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">MERGE PDFS</div>
+          <div class="card-sub">Combine multiple PDFs into a single file. Files merge in the order shown.</div>
+        </div>
+        <div class="card-arrow">+</div>
+      </div>
+      <div class="merge-note">
+        ⚠️ Upload at least 2 PDF files to merge.
+      </div>
+      <div class="dropzone" id="dz-merge"
+           ondragover="onDragOver(event,'dz-merge')"
+           ondragleave="onDragLeave('dz-merge')"
+           ondrop="onDrop(event,'merge')">
+        <input type="file" multiple accept=".pdf" onchange="onFileSelect(event,'merge')"/>
+        <div class="dz-circle">🔗</div>
+        <div class="dz-main">Drop PDF files here or click to browse</div>
+        <div class="dz-sub">All files merged into <span>one PDF</span></div>
+      </div>
+      <div class="file-list" id="list-merge"></div>
+      <button class="convert-btn" id="btn-merge" onclick="convertFiles('merge','/convert/merge-pdf')">
+        <span>⚡ MERGE ALL PDFs</span>
+      </button>
+      <div class="status" id="status-merge"></div>
+    </div>
+  </div>
+
+  <!-- PANEL: AUDIO -->
+  <div class="panel" id="panel-audio">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <div class="card-title">AUDIO DOWNLOAD</div>
+          <div class="card-sub">Paste a link — get an MP3. Works with YouTube and Instagram Reels.</div>
+        </div>
+        <div class="card-arrow">♪</div>
+      </div>
+      <div class="audio-platforms">
+        <div class="plat">
+          <div class="plat-dot plat-yt"></div>
+          <div><div class="plat-name">YouTube</div><div class="plat-sub">Videos, Shorts, playlists</div></div>
+        </div>
+        <div class="plat">
+          <div class="plat-dot plat-ig"></div>
+          <div><div class="plat-name">Instagram</div><div class="plat-sub">Reels &amp; public posts</div></div>
+        </div>
+      </div>
+      <div class="url-row">
+        <input class="url-input" type="text" id="audio-url"
+               placeholder="https://youtube.com/watch?v=... or https://instagram.com/reel/..."/>
+        <button class="dl-btn" id="btn-audio" onclick="downloadAudio()">⬇ GET MP3</button>
+      </div>
+      <div class="status" id="status-audio"></div>
+    </div>
+  </div>
+
+  <footer>
+    <strong>Converto</strong> — running locally on your machine &nbsp;·&nbsp;
+    all files stay on your device &nbsp;·&nbsp; by chefken
+  </footer>
+
+</div><!-- /main -->
+
+<script>
+  const fileStore = {};
+
+  // ── TABS ──
+  function switchTab(id, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  // ── DRAG & DROP ──
+  function onDragOver(e, dzId) {
+    e.preventDefault();
+    document.getElementById(dzId).classList.add('dragging');
+  }
+  function onDragLeave(dzId) {
+    document.getElementById(dzId).classList.remove('dragging');
+  }
+  function onDrop(e, key) {
+    e.preventDefault();
+    document.getElementById('dz-' + key).classList.remove('dragging');
+    addFiles(key, Array.from(e.dataTransfer.files));
+  }
+  function onFileSelect(e, key) {
+    addFiles(key, Array.from(e.target.files));
+    e.target.value = '';
+  }
+
+  // ── FILE MANAGEMENT ──
+  function addFiles(key, newFiles) {
+    if (!fileStore[key]) fileStore[key] = [];
+    newFiles.forEach(f => {
+      if (!fileStore[key].find(x => x.name === f.name && x.size === f.size))
+        fileStore[key].push(f);
+    });
+    renderList(key);
+  }
+  function removeFile(key, index) {
+    fileStore[key].splice(index, 1);
+    renderList(key);
+  }
+  function renderList(key) {
+    const list = document.getElementById('list-' + key);
+    list.innerHTML = '';
+    (fileStore[key] || []).forEach((f, i) => {
+      const ext = f.name.split('.').pop().toLowerCase();
+      const cls = ['pdf','docx','doc','pptx','ppt'].includes(ext) ? 'ext-'+ext : 'ext-other';
+      const size = f.size > 1048576
+        ? (f.size/1048576).toFixed(1)+' MB'
+        : Math.round(f.size/1024)+' KB';
+      list.innerHTML += `
+        <div class="file-item">
+          <div class="fi-ext ${cls}">${ext.toUpperCase()}</div>
+          <div class="fi-name">${f.name}</div>
+          <div class="fi-size">${size}</div>
+          <button class="fi-remove" onclick="removeFile('${key}',${i})" title="Remove">✕</button>
+        </div>`;
+    });
+  }
+
+  // ── CONVERT ──
+  async function convertFiles(key, endpoint) {
+    const files = fileStore[key] || [];
+    if (!files.length) { showStatus(key,'error','Add at least one file first.'); return; }
+    if (key === 'merge' && files.length < 2) { showStatus(key,'error','Add at least 2 PDFs to merge.'); return; }
+
+    const btn = document.getElementById('btn-'+key);
+    btn.disabled = true;
+    showStatus(key,'loading',`Converting ${files.length} file${files.length>1?'s':''}…`);
+
+    const fd = new FormData();
+    files.forEach(f => fd.append('files', f));
+
+    try {
+      const res = await fetch(endpoint, {
+  method: 'POST',
+  headers: {
+    "x-password": "kensony123"
+  },
+  body: fd
+});
+      if (!res.ok) {
+        const err = await res.json().catch(()=>({error:'Unknown error'}));
+        throw new Error(err.error || 'Conversion failed');
+      }
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href = url;
+      const cd = res.headers.get('Content-Disposition') || '';
+      const m  = cd.match(/filename="?([^"]+)"?/);
+      a.download = m ? m[1] : 'converted_output';
+      a.click();
+      URL.revokeObjectURL(url);
+      showStatus(key,'success',`✓ Done! ${files.length>1?'Downloaded as ZIP.':'File downloaded.'}`);
+      fileStore[key] = [];
+      renderList(key);
+    } catch(err) {
+      showStatus(key,'error','✕ '+err.message);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // ── AUDIO ──
+  async function downloadAudio() {
+    const url = document.getElementById('audio-url').value.trim();
+    if (!url) { showStatus('audio','error','Paste a YouTube or Instagram URL first.'); return; }
+    const btn = document.getElementById('btn-audio');
+    btn.disabled = true;
+    showStatus('audio','loading','Downloading audio… this may take up to a minute.');
+    try {
+        const res = await fetch('/convert/audio', {
+        method: 'POST',
+        headers: {
+            "Content-Type": "application/json",
+            "x-password": "kensony123"
+        },
+        body: JSON.stringify({url})
+    });
+      if (!res.ok) {
+        const err = await res.json().catch(()=>({error:'Unknown error'}));
+        throw new Error(err.error || 'Download failed');
+      }
+      const blob = await res.blob();
+      const objUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objUrl;
+      const cd = res.headers.get('Content-Disposition') || '';
+      const m  = cd.match(/filename="?([^"]+)"?/);
+      a.download = m ? m[1] : 'audio.mp3';
+      a.click();
+      URL.revokeObjectURL(objUrl);
+      showStatus('audio','success','✓ MP3 downloaded!');
+      document.getElementById('audio-url').value = '';
+    } catch(err) {
+      showStatus('audio','error','✕ '+err.message);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  // ── STATUS ──
+  function showStatus(key, type, msg) {
+    const el = document.getElementById('status-'+key);
+    el.className = 'status show '+type;
+    el.innerHTML = type==='loading'
+      ? `<div class="spin"></div><span>${msg}</span>`
+      : `<span>${msg}</span>`;
+  }
+</script>
+</body>
+</html>
